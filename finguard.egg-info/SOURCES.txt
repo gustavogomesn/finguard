@@ -1,0 +1,6 @@
+setup.py
+finguard.egg-info/PKG-INFO
+finguard.egg-info/SOURCES.txt
+finguard.egg-info/dependency_links.txt
+finguard.egg-info/requires.txt
+finguard.egg-info/top_level.txt

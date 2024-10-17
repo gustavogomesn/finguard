@@ -1,0 +1,56 @@
+<div class="modal fade" id="addExpenseModal" tabindex="-1">
+    <div class="modal-dialog  modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">Add expense</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'add-expense' %}" method="POST" id="add-expense-form">
+                    {% csrf_token %}
+                    {{ add_expense_form.as_p }}
+
+                    {% if form.errors %}
+                        {% for field in forms %}
+                            {% if field.errors %}
+                                <p>{{field.errors}}</p>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    expenseForm = document.getElementById('add-expense-form')
+    typeInput = document.getElementById('id_type')
+    installmentInput = document.getElementById('id_installments').parentNode
+
+    if (typeInput.value == 'fixed'){
+        expenseForm.action = "{% url 'add-fixed-expense' %}"
+        installmentInput.classList.add('d-none')
+    }
+    else if (typeInput.value == 'in_cash'){
+        installmentInput.classList.add('d-none')
+    }
+
+    typeInput.addEventListener('change', e => {
+        if(e.target.value == 'fixed'){
+            expenseForm.action = "{% url 'add-fixed-expense' %}"
+            installmentInput.classList.add('d-none')
+        }
+        else if (typeInput.value == 'in_cash'){
+            expenseForm.action = "{% url 'add-expense' %}"
+            installmentInput.classList.add('d-none')
+        }
+        else{
+            expenseForm.action = "{% url 'add-expense' %}"
+            installmentInput.classList.remove('d-none')
+        }
+    })
+
+</script>

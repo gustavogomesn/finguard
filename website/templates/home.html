@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Finguard{% endblock %}
+
+{% block content %}
+
+<div class="row mb-4">
+  <h1 class="text-secondary">Summary</h1>
+
+  <div class="col-md-4 my-md-0 my-1">
+    <div class=" border shadow-sm rounded py-2 px-3 d-flex justify-content-between bg-light">
+      <div class="summary-card">
+        <span>Balance</span>
+        {% if balance > 0 %}
+        <span class="summary-values text-success">$ {{ balance }}</span>
+        {% else %}
+        <span class="summary-values text-danger">$ {{ balance }}</span>
+        {% endif %}
+      </div>
+      <div class="d-flex align-items-center">
+        <i style="font-size: 3rem;" class="bi bi-arrow-right-circle-fill text-primary"></i>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4 my-md-0 my-1">
+    <div class=" border shadow-sm rounded py-2 px-3 d-flex justify-content-between bg-light">
+      <div class="summary-card">
+        <span>Incomes</span>
+        <span class="summary-values">$ {{ incomes_values.1 }}</span>
+      </div>
+      <div class="d-flex align-items-center">
+        <i style="font-size: 3rem;" class="bi bi-arrow-up-circle-fill text-success"></i>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-4 my-md-0 my-1">
+    <div class=" border shadow-sm rounded py-2 px-3 d-flex justify-content-between bg-light">
+      <div class="summary-card">
+        <span>Expenses</span>
+        <span class="summary-values">$ {{ values.1 }}</span>
+      </div>
+      <div class="d-flex align-items-center">
+        <i style="font-size: 3rem;" class="bi bi-arrow-down-circle-fill text-danger"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6 m3-md-0 mb-4">
+    <h2 class="text-secondary">Expenses by type</h2>
+    <div class="border shadow-sm rounded p-3 pb-0 bg-light">
+        <canvas id="byTypeChart"></canvas>
+        <div class="border-top text-center mt-4 py-4">
+          <a href="">See more</a>
+        </div>
+    </div>
+  </div>
+  <div class="col-md-6 mb-md-0 mb-4">
+    <h2 class="text-secondary">Expenses by month</h2>
+    <div class="border shadow-sm rounded p-3 pb-0 bg-light">
+        <canvas id="byMonthsChart"></canvas>
+        <div class="border-top text-center mt-4 py-4">
+          <a href="">See more</a>
+        </div>
+    </div>
+  </div>
+</div>
+
+<script>
+new Chart("byMonthsChart", {
+  type: "bar",
+  data: {
+    labels: {{months | safe}},
+    datasets: [{
+      backgroundColor: 'green',
+      data: {{values}},
+      borderColor: "gray",
+      borderWidth: 0.5
+    }]
+  },
+  options: {
+    legend: {display: false},
+    title: {
+      display: true,
+      text: "Next months"
+    }
+  }
+});
+
+new Chart("byTypeChart", {
+  type: 'doughnut',
+  data: {
+    labels: ['Fixes', 'Variable'],
+    datasets: [
+        {
+        label: 'Dataset 1',
+        data: [{{fix_sum}}, {{var_sum}}],
+        backgroundColor: ['red', 'green'],
+        }
+  ]},
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Type'
+      }
+    }
+  },
+});
+
+</script>
+
+
+{% endblock %}

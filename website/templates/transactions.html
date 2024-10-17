@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Finguard{% endblock %}
+
+{% block content %}
+
+{% include "edit-expense-modal.html" %}
+{% include "edit-income-modal.html" %}
+
+<nav class="d-flex justify-content-center">
+  <ul class="pagination">
+    <li>
+      <a href="{% url 'transactions' year=previous_year month=previous_month %}">
+        <span>&lt;</span>
+      </a>
+    </li>
+    <li class="pagination-current"><span><b style="color: black;">{{ current_text_month }}</b> {{ current_year }}</span></li>
+    <li>
+      <a href="{% url 'transactions' year=next_year month=next_month %}">
+        <span>&gt;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+
+{% if transactions %}
+<div class="scrollit">
+  <table class="table rounded overflow-hidden">
+    <thead class="table-secondary" style="position: sticky; top: 0; z-index: 1;">
+      <tr>
+        <th scope="col">Date</th>
+        <th scope="col">Name</th>
+        <th scope="col" class="d-md-table-cell d-none">Description</th>
+        <th scope="col">Value</th>
+        <th style="width: 3rem;"></th>
+      </tr>
+    </thead>
+      <tbody class="text-secondary" style="font-size: 0.9rem;">
+        {% for transaction in transactions %}
+          <tr>
+            {% if transaction.is_fixed %}
+            <th>- - -</th>
+            {% else %}
+            <th>{{ transaction.created_at|date:"M, d" }}</th>
+            {% endif %}
+            {% if transaction.current_installment %}
+            <td>{{transaction.name}}({{transaction.current_installment}}/{{transaction.installments}})</td>
+            {% else %}
+            <td>{{transaction.name}}</td>
+            {% endif %}
+            <td class="d-md-table-cell d-none">{{transaction.description}}</td>
+            {% if transaction.is_income %}
+            <td class="text-success">$ {{transaction.value}}</td>
+            {% else %}
+            <td class="text-danger">$ {{transaction.value}}</td>
+            {% endif %}
+            <td>
+              <button
+               type="button" 
+               data-bs-toggle="modal"
+               {% if transaction.is_income %}
+               data-bs-target="#editIncomeModal" 
+               {% else %}
+               data-bs-target="#editExpenseModal" 
+               {% endif %}
+               data-id="{{transaction.id}}"
+               data-date="{{transaction.created_at}}"
+               data-category="{{transaction.category}}"
+               data-name="{{transaction.name}}"
+               data-description="{{transaction.description}}"
+               data-value="{{transaction.value}}"
+               {% if not transaction.is_income %}
+               data-installments="{{transaction.installments}}"
+               {% endif %}
+               data-is-fixed="{{transaction.is_fixed}}">
+                <i class="bi bi-pen edit-icon"></i>
+              </button>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
+  </div>
+
+{% else %}
+  <p>Create your first transaction.</p>
+{% endif %}
+
+
+{% endblock %}

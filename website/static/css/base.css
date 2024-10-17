@@ -1,0 +1,77 @@
+:root{
+    --light-blue: rgb(237, 243, 251);
+    --light-dark: #2C2C2E;
+    --forest-green: #2e6f40
+}
+
+body{
+    background-color: var(--light-blue)!important;
+}
+
+.container:has(.login-card) {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.login-card {
+    width: 90%;
+    max-width: 600px;
+}
+
+.add-transaction-button{
+    border: none;
+    background-color: transparent;
+}
+
+.summary-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.summary-card span:first-child{
+    color: gray;
+}
+
+.summary-values {
+    font-weight: 400;
+    font-size: 1.5rem;
+}
+
+.edit-icon{
+    visibility: hidden;
+    color: blue;
+}
+
+button:has(.edit-icon) {
+    border-style: none;
+    background-color: transparent;
+}
+
+tr:hover td .edit-icon{
+    visibility: visible;
+}
+
+.pagination li {
+    margin: 0 15px;
+    padding: 7.5px;
+    color: var(--forest-green);
+}
+
+.pagination .pagination-current {
+    border: 2px solid var(--forest-green);
+    border-radius: 15px;
+}
+
+.pagination li a{
+    text-decoration: none;
+    color: var(--forest-green);
+    font-weight: 700;
+}
+
+.scrollit{
+    overflow-y: auto;
+    max-height: 75vh;
+}

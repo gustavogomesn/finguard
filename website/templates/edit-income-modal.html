@@ -1,0 +1,122 @@
+<!-- Modal -->
+<div class="modal fade" id="editIncomeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">Edit income</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="#" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" class="form-control" name="date" id="input-income-date">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select class="form-control" name="category" id="input-income-category">
+                            <option value="salary">Salary</option>
+                            <option value="investments">Investments</option>
+                            <option value="rentals">Rentals</option>
+                            <option value="bonus">Bonus</option>
+                            <option value="extra-income">Extra Income</option>
+                            <option value="others">Others</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" class="form-control" name="name" id="input-income-name">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" class="form-control" name="description" id="input-income-description">
+                    </div>
+                    <div class="form-group">
+                        <label>Value</label>
+                        <input type="number" step="0.01" class="form-control" name="value" id="input-income-value">
+                    </div>
+                    <div class="form-check my-3">
+                        <input class="form-check-input" type="checkbox" id="recurring-check-edit">
+                        <label class="form-check-label" name="recurring-check-edit" for="recurring-check-edit">Recurring?</label>
+                    </div>
+
+                    {% if form.errors %}
+                        {% for field in forms %}
+                            {% if field.errors %}
+                                <p>{{field.errors}}</p>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button class="btn btn-danger" type="submit" id="delete-income-button">Delete</button>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$(document).ready(function(){
+    $(document).on('show.bs.modal','#editIncomeModal', function (event) {
+        var button = $(event.relatedTarget)
+        
+        var id = button.data('id');
+        var dateStr = button.data('date');
+        var dateObj = new Date(dateStr);
+        var date = dateObj.toISOString().split('T')[0];
+        var category = button.data('category')
+        var name = button.data('name')
+        var description = button.data('description')
+        var value = button.data('value')
+        var isFixed = button.data('is-fixed')
+
+        var modal = $(this)
+        modal.find('#input-income-date').val(date)
+        modal.find('#input-income-category').val(category)
+        modal.find('#input-income-name').val(name)
+        modal.find('#input-income-description').val(description)
+        modal.find('#input-income-value').val(value)
+        if(isFixed.toLowerCase() === 'true'){
+            modal.find('#recurring-check-edit').prop('checked', true)
+            modal.find('form').attr('action', "{% url 'edit-income' 'fixed' 0 %}".replace(0, id));
+        }
+        else{
+            modal.find('#recurring-check-edit').prop('checked', false)
+            modal.find('form').attr('action', "{% url 'edit-income' 'variable' 0 %}".replace(0, id));
+        }
+        
+        typeInput = document.getElementById('recurring-check-edit')
+        typeInput.removeAttribute("disabled")
+        try{
+            notice = document.querySelector('small')
+            notice.remove()
+        }catch(error){}
+
+        typeInput.setAttribute('disabled', true)
+        notice = document.createElement('small')
+        notice.textContent = "To avoid inconsistencies, it is not possible to edit the type income yet. If necessary, delete it and create a new income with another type"
+        typeInput.parentNode.insertAdjacentElement('afterend', notice)
+
+
+    });
+});
+
+// workaround DELETE method
+deleteButton = document.getElementById('delete-income-button')
+deleteButton.addEventListener('click', e => {
+    e.preventDefault()
+    if (window.confirm('Are you sure you want to exclude this income?')){
+        hiddenInput = document.createElement('input')
+        hiddenInput.setAttribute('type', 'hidden')
+        hiddenInput.setAttribute('name', '_method')
+        hiddenInput.setAttribute('value', 'DELETE')
+        e.target.insertAdjacentElement('afterend', hiddenInput)
+        e.target.form.submit()
+    }
+
+})
+
+</script>

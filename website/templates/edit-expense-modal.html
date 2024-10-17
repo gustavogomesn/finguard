@@ -1,0 +1,168 @@
+<!-- Modal -->
+<div class="modal fade" id="editExpenseModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">Edit expense</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="#" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" class="form-control" name="date" id="input-date">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select class="form-control" name="category" id="input-category">
+                            <option value="food">Food</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="home">Home</option>
+                            <option value="transport">Transport</option>
+                            <option value="taxes">Taxes</option>
+                            <option value="bills">Fixed bills</option>
+                            <option value="transport">Transport</option>
+                            <option value="study">Study</option>
+                            <option value="eletronics">Eletronics</option>
+                            <option value="others">Others</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" class="form-control" name="name" id="input-name">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" class="form-control" name="description" id="input-description">
+                    </div>
+                    <div class="form-group">
+                        <label>Value</label>
+                        <input type="number" step="0.01" class="form-control" name="value" id="input-value">
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select class="form-control" name="type" id="input-type">
+                            <option value="in-cash">In cash</option>
+                            <option value="installments">Installments</option>
+                            <option value="fixed">Fixed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Installments</label>
+                        <input type="number" value="1" min="1" step="1" class="form-control" name="installments" id="input-installments">
+                    </div>
+
+                    {% if form.errors %}
+                        {% for field in forms %}
+                            {% if field.errors %}
+                                <p>{{field.errors}}</p>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button class="btn btn-danger" type="submit" id="delete-expense-button">Delete</button>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$(document).ready(function(){
+    $(document).on('show.bs.modal','#editExpenseModal', function (event) {
+        var button = $(event.relatedTarget)
+        
+        var id = button.data('id');
+        var dateStr = button.data('date');
+        var dateObj = new Date(dateStr);
+        var date = dateObj.toISOString().split('T')[0];
+        var category = button.data('category')
+        var name = button.data('name')
+        var description = button.data('description')
+        var value = button.data('value')
+        var isFixed = button.data('is-fixed')
+        var installments = button.data('installments')
+
+
+        var modal = $(this)
+        modal.find('#input-date').val(date)
+        modal.find('#input-category').val(category)
+        modal.find('#input-name').val(name)
+        modal.find('#input-description').val(description)
+        modal.find('#input-value').val(value)
+        if(installments > 1){
+            modal.find('#input-value').val(value*installments)
+            modal.find('#input-type').val('installments')
+            modal.find('form').attr('action', "{% url 'edit-expense' 'variable' 0 %}".replace(0, id));
+        }
+        else if(isFixed.toLowerCase() === 'true'){
+            modal.find('#input-type').val('fixed')
+            modal.find('form').attr('action', "{% url 'edit-expense' 'fixed' 0 %}".replace(0, id));
+        }
+        else{
+            modal.find('#input-type').val('in-cash')
+            modal.find('form').attr('action', "{% url 'edit-expense' 'variable' 0 %}".replace(0, id));
+        }
+        modal.find('#input-installments').val(installments)
+        
+        // hidden installment input if expense is fixed
+        typeInput = document.getElementById('input-type')
+        installmentInput = document.getElementById('input-installments').parentNode
+        typeInput.removeAttribute("disabled")
+        try{
+            notice = document.querySelector('small')
+            notice.remove()
+        }catch(error){}
+
+        if (typeInput.value == 'fixed'){
+            typeInput.setAttribute('disabled', true)
+            installmentInput.classList.add('d-none')
+            notice = document.createElement('small')
+            notice.textContent = "To avoid inconsistencies, it is not possible to edit the type of fixed expenses. If necessary, delete it and create a new expense with another type"
+            installmentInput.insertAdjacentElement('afterend', notice)
+        }
+        else if (typeInput.value == 'in-cash'){
+            installmentInput.classList.add('d-none')
+        }
+        else{
+            installmentInput.classList.remove('d-none')
+        }
+
+        typeInput.addEventListener('change', e => {
+            if(e.target.value == 'fixed'){
+                installmentInput.classList.add('d-none')
+            }
+            else if (e.target.value == 'in-cash'){
+                installmentInput.classList.add('d-none')
+                installmentInput.lastElementChild.value = 1
+            }
+            else{
+                installmentInput.classList.remove('d-none')
+                try{
+                    notice = document.querySelector('small')
+                    notice.remove()
+                }catch(error){}
+            }
+        })
+    });
+});
+
+// workaround DELETE method
+deleteButton = document.getElementById('delete-expense-button')
+deleteButton.addEventListener('click', e => {
+    e.preventDefault()
+    if (window.confirm('Are you sure you want to exclude this expense?')){
+        hiddenInput = document.createElement('input')
+        hiddenInput.setAttribute('type', 'hidden')
+        hiddenInput.setAttribute('name', '_method')
+        hiddenInput.setAttribute('value', 'DELETE')
+        e.target.insertAdjacentElement('afterend', hiddenInput)
+        e.target.form.submit()
+    }
+
+})
+
+</script>

@@ -1,0 +1,49 @@
+<div class="modal fade" id="addIncomeModal" tabindex="-1">
+    <div class="modal-dialog  modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">Add income</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'add-income' %}" method="POST" id="add-income-form">
+                    {% csrf_token %}
+                    {{ add_income_form.as_p }}
+                    <p class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="recurring_check">
+                        <label class="form-check-label" name="recurring_check" for="recurring_check">Recurring?</label>
+                    </p>
+                    {% if form.errors %}
+                        {% for field in forms %}
+                            {% if field.errors %}
+                                <p>{{field.errors}}</p>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    incomeForm = document.getElementById('add-income-form')
+    check = document.getElementById('recurring_check')
+
+    if (check.checked){
+        form.action = "{% url 'add-fixed-income' %}"
+    }
+
+    check.addEventListener('change', e => {
+        if(e.target.checked){
+            incomeForm.action = "{% url 'add-fixed-income' %}"
+
+        }
+        else{
+            incomeForm.action = "{% url 'add-income' %}"
+        }
+    })
+
+</script>
