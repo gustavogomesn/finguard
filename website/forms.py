@@ -61,6 +61,9 @@ class AddExpenseForm(forms.ModelForm):
         'entertainment': 'Entertainment',
         'study': 'Study',
         'eletronics': 'Eletronics',
+        'clothes': 'Clothes',
+        'health': 'Health',
+        'investments': 'Investments',
         'others': 'Others'
     })
     category.widget.attrs['class'] = 'form-control'

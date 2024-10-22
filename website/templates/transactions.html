@@ -39,7 +39,7 @@
         {% for transaction in transactions %}
           <tr>
             {% if transaction.is_fixed %}
-            <th>- - -</th>
+            <th></th>
             {% else %}
             <th>{{ transaction.created_at|date:"M, d" }}</th>
             {% endif %}
