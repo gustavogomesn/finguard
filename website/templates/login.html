@@ -4,6 +4,7 @@
 
 {% block content %}
 <div class="container card mb-3 login-card">
+  
     <div class="card-body p-4 p-lg-5 text-black">
       <form action="{% url 'login' %}" , method="POST">
         {% csrf_token %}
@@ -21,6 +22,16 @@
         <div data-mdb-input-init class="form-outline mb-4">
           <input type="password" name="password" class="form-control form-control-lg" placeholder="Password" required />
         </div>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-danger" role="alert">
+              {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
         <div class="pt-1 mb-4">
           <button class="btn btn-dark btn-lg btn-block" type="submit">Login</button>

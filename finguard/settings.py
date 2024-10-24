@@ -124,6 +124,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://finguard-2c9984f2afaf.herokuapp.com/"
 ]
 
+ADMINS = [("Gustavo Gomes", "gustavo.gonosi@gmail.com")]
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ['SMTP_HOST']
 EMAIL_PORT = os.environ['SMTP_PORT']

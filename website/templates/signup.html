@@ -13,9 +13,20 @@
 
             <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Create your account</h5>
 
-            {{ form.as_p }}
+            {% for field in form %}
+            <div>
+                {{ field.label_tag }}
+                {{ field }}
+                {{ field.help_text | safe }}
+                {% if field.errors %}
+                <small class="text-danger mt-2" role="alert">
+                    {{ field.errors.as_text }}
+                </small>
+                {% endif %}
+            </div>
+            {% endfor %}
 
-            <div class="pt-1 mb-4">
+            <div class="pt-1 my-4">
                 <button class="btn btn-dark btn-lg btn-block"
                     type="submit">Create</button>
             </div>

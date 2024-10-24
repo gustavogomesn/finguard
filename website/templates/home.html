@@ -54,7 +54,7 @@
     <div class="border shadow-sm rounded p-3 pb-0 bg-light">
         <canvas id="byTypeChart"></canvas>
         <div class="border-top text-center mt-4 py-4">
-          <a href="">See more</a>
+          <a href="" data-bs-toggle="modal" data-bs-target="#expensesCategoryModal">See more</a>
         </div>
     </div>
   </div>
@@ -63,59 +63,46 @@
     <div class="border shadow-sm rounded p-3 pb-0 bg-light">
         <canvas id="byMonthsChart"></canvas>
         <div class="border-top text-center mt-4 py-4">
-          <a href="">See more</a>
+          <a href="" data-bs-toggle="modal" data-bs-target="#balanceModal">See more</a>
         </div>
     </div>
   </div>
 </div>
 
-<script>
-new Chart("byMonthsChart", {
-  type: "bar",
-  data: {
-    labels: {{months | safe}},
-    datasets: [{
-      backgroundColor: 'green',
-      data: {{values}},
-      borderColor: "gray",
-      borderWidth: 0.5
-    }]
-  },
-  options: {
-    legend: {display: false},
-    title: {
-      display: true,
-      text: "Next months"
-    }
-  }
-});
+<!-- Charts Modals -->
+<div class="modal fade" id="expensesCategoryModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+          <div class="modal-body">
+            <p class="text-secondary">Expenses by category</p>
+            <canvas id="byCategoryChart"></canvas>
+          </div>
+      </div>
+  </div>
+</div>
 
-new Chart("byTypeChart", {
-  type: 'doughnut',
-  data: {
-    labels: ['Fixes', 'Variable'],
-    datasets: [
-        {
-        label: 'Dataset 1',
-        data: [{{fix_sum}}, {{var_sum}}],
-        backgroundColor: ['red', 'green'],
-        }
-  ]},
-  options: {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Type'
-      }
-    }
-  },
-});
+<div class="modal fade" id="balanceModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+          <div class="modal-body">
+            <p class="text-secondary">Resume</p>
+            <canvas id="balanceChart"></canvas>
+          </div>
+      </div>
+  </div>
+</div>
 
+<script type="text/javascript">
+var byMonthLabels = {{months | safe}}
+var expensesByMonthValues = {{values}}
+var byTypeValues = [{{fix_sum}}, {{var_sum}}]
+var byCategoryLabels = {{ category_data_keys | safe }}
+var byCategoryValues = {{ category_data_values | safe }}
+var byCategoryColors = {{ category_colors | safe}}
+var incomesByMonthValues = {{incomes_values}}
 </script>
+{% load static %}
+<script src="{% static 'js/charts.js' %}"
 
 
 {% endblock %}

@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from .forms import SignUpForm, AddExpenseForm, AddFixedExpenseForm, AddIncomeForm, AddFixedIncomeForm
 from .models import Expense, FixedExpense, Income, FixedIncome
-from .utils import get_expenses_summary, get_incomes_summary
+from .utils import get_expenses_summary, get_incomes_summary, get_expense_category_data
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import calendar
@@ -35,8 +35,7 @@ def logout_user(request):
 
 def register_user(request):
     if request.user.is_authenticated:
-        logout(request)
-        return redirect('login')
+        return redirect('home')
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
@@ -47,7 +46,6 @@ def register_user(request):
             messages.success(request, "You register successfully!")
             login(request, user)
             return redirect('home')
-    
     else:
         form = SignUpForm()
         return render(request, 'signup.html', {'form': form})
@@ -59,14 +57,17 @@ def register_user(request):
 def home(request):
     current_date = date.today()
     
-    expenses_data = get_expenses_summary(request)
-    incomes_data = get_incomes_summary(request)
+    expenses_data = get_expenses_summary(request, current_date, expenses = Expense, fixed_expenses = FixedExpense)
+    incomes_data = get_incomes_summary(request, current_date, incomes = Income, fixed_incomes = FixedIncome)
+    expenses_by_category = get_expense_category_data(request, current_date, expenses = Expense, fixed_expenses = FixedExpense)
+    
     add_expense_form = AddExpenseForm()
     add_income_form = AddIncomeForm()
     
     additional_data = {
         **expenses_data,
         **incomes_data,
+        **expenses_by_category,
         'balance': round(incomes_data['incomes_values'][1] - expenses_data['values'][1], 2),
         'current_year': current_date.year,
         'current_month': current_date.month,
