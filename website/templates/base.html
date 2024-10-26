@@ -19,7 +19,7 @@
 
 <body>
   {% if user.is_authenticated %}
-    <header class="navbar navbar-expand-lg navbar-light bg-light border-bottom p-3 mb-4" style="margin-right: auto!important;">
+    <header class="navbar navbar-expand-lg navbar-light bg-light border-bottom p-3 mb-4">
       <a href="/" class="navbar-brand">
         <span>Finguard</span>
       </a>
@@ -33,7 +33,7 @@
             <div class="dropdown">
               <button type="button" class="nav-link add-transaction-button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 New
-            </button>
+              </button>
             <div class="dropdown-menu">
               <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
                 Expense

@@ -4,6 +4,22 @@
 
 {% block content %}
 
+<nav class="d-flex justify-content-center">
+  <ul class="pagination">
+    <li>
+      <a href="{% url 'home' year=previous_year month=previous_month %}">
+        <i class="bi bi-caret-left-fill"></i>
+      </a>
+    </li>
+    <li class="pagination-current"><span><b style="color: black;">{{ current_text_month }}</b> {{ current_year }}</span></li>
+    <li>
+      <a href="{% url 'home' year=next_year month=next_month %}">
+        <i class="bi bi-caret-right-fill"></i>
+      </a>
+    </li>
+  </ul>
+</nav>
+
 <div class="row mb-4">
   <h1 class="text-secondary">Summary</h1>
 
@@ -102,7 +118,7 @@ var byCategoryColors = {{ category_colors | safe}}
 var incomesByMonthValues = {{incomes_values}}
 </script>
 {% load static %}
-<script src="{% static 'js/charts.js' %}"
+<script src="{% static 'js/charts.js' %}"></script>
 
 
 {% endblock %}

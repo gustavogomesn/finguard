@@ -54,8 +54,8 @@ def register_user(request):
 
 
 @login_required
-def home(request):
-    current_date = date.today()
+def home(request, year = date.today().year, month = date.today().month):
+    current_date = date(year, month, 1)
     
     expenses_data = get_expenses_summary(request, current_date, expenses = Expense, fixed_expenses = FixedExpense)
     incomes_data = get_incomes_summary(request, current_date, incomes = Income, fixed_incomes = FixedIncome)
@@ -64,6 +64,11 @@ def home(request):
     add_expense_form = AddExpenseForm()
     add_income_form = AddIncomeForm()
     
+    previous_year = (current_date - relativedelta(months=1)).year
+    previous_month = (current_date - relativedelta(months=1)).month
+    next_year = (current_date + relativedelta(months=1)).year
+    next_month = (current_date + relativedelta(months=1)).month
+    
     additional_data = {
         **expenses_data,
         **incomes_data,
@@ -71,6 +76,11 @@ def home(request):
         'balance': round(incomes_data['incomes_values'][1] - expenses_data['values'][1], 2),
         'current_year': current_date.year,
         'current_month': current_date.month,
+        "current_text_month": calendar.month_name[month],
+        'previous_year': previous_year,
+        'previous_month': previous_month,
+        'next_year': next_year,
+        'next_month': next_month,
         "add_expense_form": add_expense_form,
         "add_income_form": add_income_form
         }
@@ -80,7 +90,9 @@ def home(request):
 def transactions(request, year, month):
     current_date = date(year=year, month=month, day=1)
     
-    fixed_incomes = FixedIncome.objects.filter(Q(end_month__isnull = True) | Q(end_month__lte = current_date), user_id = request.user.id)
+    last_day = calendar.monthrange(year, month)[1]
+    date_verification = Q(created_at__lte = date(year, month, last_day))
+    fixed_incomes = FixedIncome.objects.filter(date_verification, Q(end_month__isnull = True) | Q(end_month__gte = current_date), user_id = request.user.id)
     for fi in fixed_incomes:
         fi.is_income = True
         fi.is_fixed = True
@@ -89,9 +101,10 @@ def transactions(request, year, month):
     incomes = Income.objects.filter(user_id = request.user.id).order_by('-created_at')
     for i in incomes:
         i.is_income = True
-    filter_transations += list(incomes)
+        if i.created_at.year == year and i.created_at.month == month:
+            filter_transations.append(i)
     
-    fixed_expenses = FixedExpense.objects.filter(Q(end_month__isnull = True) | Q(end_month__lte = current_date), user_id = request.user.id)
+    fixed_expenses = FixedExpense.objects.filter(date_verification , Q(end_month__isnull = True) | Q(end_month__gte = current_date), user_id = request.user.id)
     for fe in fixed_expenses:
         fe.is_fixed = True
     filter_transations += list(fixed_expenses)
@@ -100,6 +113,7 @@ def transactions(request, year, month):
     
     for expense in expenses:
         expense.is_fixed = False
+        expense.created_at = expense.created_at.replace(day=1)
         if expense.installments > 1 and (expense.created_at <= current_date < expense.created_at + relativedelta(months=expense.installments)):
             diff = relativedelta(current_date, expense.created_at)
             diff_days = ((diff.years)*12)*30 + diff.months*30 + diff.days
@@ -183,7 +197,10 @@ def edit_expense(request, type, id):
             "description" : request.POST.dict()['description'],
             "category": request.POST.dict()['category'],
             "value": request.POST.dict()['value'],
+            "end_month": request.POST.dict()['end-month']
             }
+            if(not cleaned_data['end_month']):
+                cleaned_data.pop('end_month')
             expense = FixedExpense.objects.filter(id=id, user_id=request.user.id)
             expense.update(**cleaned_data)
         else:
@@ -255,7 +272,10 @@ def edit_income(request, type, id):
             "description" : request.POST.dict()['description'],
             "category": request.POST.dict()['category'],
             "value": request.POST.dict()['value'],
+            "end_month": request.POST.dict()['end-month']
             }
+            if(not cleaned_data['end_month']):
+                cleaned_data.pop('end_month')
             income = FixedIncome.objects.filter(id=id, user_id=request.user.id)
             income.update(**cleaned_data)
         else:

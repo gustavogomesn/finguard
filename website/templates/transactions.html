@@ -11,13 +11,13 @@
   <ul class="pagination">
     <li>
       <a href="{% url 'transactions' year=previous_year month=previous_month %}">
-        <span>&lt;</span>
+        <i class="bi bi-caret-left-fill"></i>
       </a>
     </li>
     <li class="pagination-current"><span><b style="color: black;">{{ current_text_month }}</b> {{ current_year }}</span></li>
     <li>
       <a href="{% url 'transactions' year=next_year month=next_month %}">
-        <span>&gt;</span>
+        <i class="bi bi-caret-right-fill"></i>
       </a>
     </li>
   </ul>
@@ -72,7 +72,11 @@
                {% if not transaction.is_income %}
                data-installments="{{transaction.installments}}"
                {% endif %}
-               data-is-fixed="{{transaction.is_fixed}}">
+               data-is-fixed="{{transaction.is_fixed}}"
+               {% if transaction.is_fixed %}
+               data-end-month="{{transaction.end_month}}" 
+               {% endif %}
+               >
                 <i class="bi bi-pen edit-icon"></i>
               </button>
             </td>

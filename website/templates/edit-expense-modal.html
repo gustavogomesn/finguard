@@ -56,6 +56,11 @@
                         <input type="number" value="1" min="1" step="1" class="form-control" name="installments" id="input-installments">
                     </div>
 
+                    <div class="form-group d-none" id="expense-end-month-group">
+                        <label>End month <span style="font-size: .75rem;">(Only if you want to stop this transaction)</span></label>
+                        <input type="date" class="form-control" name="end-month" id="input-expense-end-month">
+                    </div>
+
                     {% if form.errors %}
                         {% for field in forms %}
                             {% if field.errors %}
@@ -66,6 +71,7 @@
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary save-button">Save</button>
                         <button class="btn btn-danger" type="submit" id="delete-expense-button">Delete</button>
+                        <button class="btn btn-warning d-none" type="submit" id="interrupt-expense-button">Interrupt</button>
                     </div>
                     
                 </form>
@@ -89,6 +95,13 @@ $(document).ready(function(){
         var isFixed = button.data('is-fixed')
         var installments = button.data('installments')
 
+        var endMonthStr = button.data('end-month')
+        if (!endMonthStr) endMonthStr = 'None'
+        if(endMonthStr != 'None'){
+            var endMonthObj = new Date(endMonthStr);
+            var endMonth = endMonthObj.toISOString().split('T')[0];
+        }
+
 
         var modal = $(this)
         modal.find('#input-date').val(date)
@@ -96,18 +109,23 @@ $(document).ready(function(){
         modal.find('#input-name').val(name)
         modal.find('#input-description').val(description)
         modal.find('#input-value').val(value)
+        modal.find('#input-expense-end-month').val(endMonth)
+
         if(installments > 1){
             modal.find('#input-value').val(value*installments)
             modal.find('#input-type').val('installments')
             modal.find('form').attr('action', "{% url 'edit-expense' 'variable' 0 %}".replace(0, id));
+            document.querySelector('#expense-end-month-group').classList.add('d-none')
         }
         else if(isFixed.toLowerCase() === 'true'){
             modal.find('#input-type').val('fixed')
             modal.find('form').attr('action', "{% url 'edit-expense' 'fixed' 0 %}".replace(0, id));
+            document.querySelector('#expense-end-month-group').classList.remove('d-none')
         }
         else{
             modal.find('#input-type').val('in-cash')
             modal.find('form').attr('action', "{% url 'edit-expense' 'variable' 0 %}".replace(0, id));
+            document.querySelector('#end-month-input').classList.add('d-none')
         }
         modal.find('#input-installments').val(installments)
         

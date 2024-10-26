@@ -1,9 +1,10 @@
 from django.db.models import Q
 from dateutil.relativedelta import relativedelta
 import calendar
+from datetime import date
 
 def get_expenses_summary(request, month_calendar, **models):
-    current_date = month_calendar
+    current_date = date(month_calendar.year, month_calendar.month, 1)
     
     # Pass data from previous month to next 3 months
     months_to_graphs = []
@@ -14,7 +15,7 @@ def get_expenses_summary(request, month_calendar, **models):
             months_to_graphs.append(current_date + relativedelta(months=rel))
     
     expenses = list(models['expenses'].objects.filter(user_id = request.user.id))
-    fixed_expenses = models['fixed_expenses'].objects.filter(Q(end_month__isnull = True) | Q(end_month__lte = current_date), user_id = request.user.id)
+    fixed_expenses = models['fixed_expenses'].objects.filter(user_id = request.user.id)
     
     next_months_sum = {
         calendar.month_name[months_to_graphs[0].month]: 0,
@@ -28,25 +29,30 @@ def get_expenses_summary(request, month_calendar, **models):
     fix_exp_sum = 0
     
     for fexpense in fixed_expenses:
-        fix_exp_sum += fexpense.value
-        for i in range(-1, 4):
-            fexpense.created_at = current_date + relativedelta(months=i)
-            next_months_sum[calendar.month_name[fexpense.created_at.month]] += fexpense.value
+        fexpense.created_at = fexpense.created_at.replace(day=1)
+        for month in months_to_graphs:
+            if month >= fexpense.created_at:
+                if fexpense.end_month == None or fexpense.end_month >= month:
+                    if month == current_date:
+                        fix_exp_sum += fexpense.value
+                    next_months_sum[calendar.month_name[month.month]] += fexpense.value
+                
     
     for expense in expenses:
         for month in months_to_graphs:
+            expense.created_at = expense.created_at.replace(day=1)
             if month == current_date:
-                if expense.created_at.year == month.year and expense.created_at.month == month.month:
-                    next_months_sum[calendar.month_name[expense.created_at.month]] += expense.value
-                    var_exp_sum += expense.value
-                elif expense.installments > 1 and (expense.created_at <= month < expense.created_at + relativedelta(months=expense.installments)):
+                if expense.installments > 1 and (expense.created_at <= month < expense.created_at + relativedelta(months=expense.installments)):
                     next_months_sum[calendar.month_name[month.month]] += expense.value
+                    var_exp_sum += expense.value
+                elif expense.created_at.year == month.year and expense.created_at.month == month.month:
+                    next_months_sum[calendar.month_name[expense.created_at.month]] += expense.value
                     var_exp_sum += expense.value
             else:
-                if expense.created_at.year == month.year and expense.created_at.month == month.month:
-                    next_months_sum[calendar.month_name[expense.created_at.month]] += expense.value
-                elif expense.installments > 1 and (expense.created_at <= month < expense.created_at + relativedelta(months=expense.installments)):
+                if expense.installments > 1 and (expense.created_at <= month < expense.created_at + relativedelta(months=expense.installments)):
                     next_months_sum[calendar.month_name[month.month]] += expense.value
+                elif expense.created_at.year == month.year and expense.created_at.month == month.month:
+                    next_months_sum[calendar.month_name[expense.created_at.month]] += expense.value
     
     for key, value in next_months_sum.items():
         next_months_sum[key] = round(value, 2)
@@ -63,7 +69,7 @@ def get_expense_category_data(request, month_calendar, **models):
     current_date = month_calendar
     
     expenses = list(models['expenses'].objects.filter(user_id = request.user.id))
-    fixed_expenses = models['fixed_expenses'].objects.filter(Q(end_month__isnull = True) | Q(end_month__lte = current_date), user_id = request.user.id)
+    fixed_expenses = models['fixed_expenses'].objects.filter(Q(end_month__isnull = True) | Q(end_month__gte = current_date), user_id = request.user.id)
 
     category_sum = {}
     
@@ -77,10 +83,11 @@ def get_expense_category_data(request, month_calendar, **models):
             category_sum[fexpense.category] = fexpense.value
             
     for expense in expenses:
-        try:
-            category_sum[expense.category] += expense.value
-        except KeyError:
-            category_sum[expense.category] = expense.value
+        if expense.created_at.month == current_date.month and expense.created_at.year == current_date.year:
+            try:
+                category_sum[expense.category] += expense.value
+            except KeyError:
+                category_sum[expense.category] = expense.value
         
     return {
         'category_data_keys': list(category_sum.keys()),
@@ -100,7 +107,7 @@ def get_incomes_summary(request, month_calendar, **models):
             months_to_graphs.append(current_date + relativedelta(months=rel))
     
     incomes = list(models['incomes'].objects.filter(user_id = request.user.id))
-    fixed_incomes = models['fixed_incomes'].objects.filter(Q(end_month__isnull = True) | Q(end_month__lte = current_date), user_id = request.user.id)
+    fixed_incomes = models['fixed_incomes'].objects.filter(Q(end_month__isnull = True) | Q(end_month__gte = current_date), user_id = request.user.id)
     
     next_months_sum = {
         calendar.month_name[months_to_graphs[0].month]: 0,
@@ -112,10 +119,12 @@ def get_incomes_summary(request, month_calendar, **models):
 
     
     for fincome in fixed_incomes:
-        for i in range(-1, 4):
-            fincome.created_at = current_date + relativedelta(months=i)
-            next_months_sum[calendar.month_name[fincome.created_at.month]] += fincome.value
-    
+        fincome.created_at = fincome.created_at.replace(day=1)
+        for month in months_to_graphs:
+            if month >= fincome.created_at:
+                if fincome.end_month == None or fincome.end_month >= month:
+                    next_months_sum[calendar.month_name[month.month]] += fincome.value
+
     for income in incomes:
         for month in months_to_graphs:
             if income.created_at.year == month.year and income.created_at.month == month.month:
