@@ -113,13 +113,13 @@ def transactions(request, year, month):
     
     for expense in expenses:
         expense.is_fixed = False
-        expense.created_at = expense.created_at.replace(day=1)
-        if expense.installments > 1 and (expense.created_at <= current_date < expense.created_at + relativedelta(months=expense.installments)):
-            diff = relativedelta(current_date, expense.created_at)
+        expense.created_at_aux = expense.created_at.replace(day=1)
+        if expense.installments > 1 and (expense.created_at_aux <= current_date < expense.created_at_aux + relativedelta(months=expense.installments)):
+            diff = relativedelta(current_date, expense.created_at_aux)
             diff_days = ((diff.years)*12)*30 + diff.months*30 + diff.days
             expense.current_installment = round(diff_days/30) + 1
             filter_transations.append(expense)
-        elif expense.created_at.year == year and expense.created_at.month == month:
+        elif expense.created_at_aux.year == year and expense.created_at_aux.month == month:
             filter_transations.append(expense)
             
     previous_year = (current_date - relativedelta(months=1)).year
